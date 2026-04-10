@@ -1,0 +1,125 @@
+#+title: Clase 13 03
+
+* Astronomical Data Query Language
+
+TAP maneja todo desde el servidor, no PC.
+
+- Quiero colectar muchos y grandes datos.
+- Bases de datos relacionales pero permite calcular distancias, por ejemplo.
+
+* Relational Algebra
+
+- unary select
+- unary project
+- unary rename
+- binary cartesian product
+- binary union
+- binary set difference
+
+
+* Select for real:
+
+Select statements lets you write down expression of relational algebra.
+
+
+
+Select [TOP setLimit] selectList(=columns) FROM fromClause [WHERE conditions] [GROUP BY columns] [ORDER BY columns]
+
+
+* NULL:
+
+Solo con IS o IS NOT. No sirve el != ó el ==.
+
+- El HEALPixes ayuda a caracterizar algunas propiedades del cielo. 
+
+* Ejercicio:
+** 20 estrellas más brillantes:
+
+select top 20 comname,vmag FROM fk6.part1 order by vmag
+
+** magnitud absoluta de las 20 más brillantes:
+
+select top 20 comname,vmag, pres,
+pres*3600 as press_arcseg,
+5 + 5*LOG10(pres*3600)+ vmag as ab_mag
+FROM fk6.part1 order by vmag 
+
+** Usando otros que dan pres*3600 < 0:
+
+select top 20 comname,vmag, pres,
+pres*3600 as press_arcseg,
+5 +5*LOG10(pres*3600) + vmag as ab_mag
+FROM fk6.fk6join 
+where pres>0
+order by vmag
+
+
+** Encuentre cuántos objetos no tienen velocidad radial.
+
+SELECT rv, COUNT(*) AS n 
+FROM cns5.main 
+WHERE rv IS NULL
+GROUP BY rv
+
+
+Importante el *GROUP BY* cuando se usa el *COUNT*
+
+
+* Healpix (25/03)
+
+
+** Ejercicio 6: Make an all-sky plot of the number of objects and their average effective temperature in HEALPixes of level 5 of the catalogue rave.main
+
+
+
+
+SELECT ivo_healpix_index(5, raj2000, dej2000) AS bin,
+  COUNT(*) AS n,
+  Avg(teff_k) AS avg_temp
+FROM rave.main
+WHERE teff_k IS NOT NULL
+GROUP BY bin
+
+
+Esto fue de GAVO DC TAP service.
+
+Lo que hace es:
+
+
+Aquí tienes la traducción exacta de cada línea de código:
+
+    SELECT ivo_healpix_index(5, raj2000, dej2000) AS bin,
+    Toma la coordenada de cada estrella (raj2000 y dej2000), calcula en qué "baldosa" HEALPix de nivel 5 cae, y crea una columna llamada bin (canasta o celda) para guardar ese número de identificación.
+
+    COUNT(*) AS n,
+    Cuenta cuántas estrellas en total cayeron dentro de cada baldosa y guarda ese número en una columna llamada n.
+
+    AVG(teff_k) AS avg_temp
+    Suma las temperaturas (teff_k) de todas las estrellas de esa baldosa y las divide entre el número de estrellas para sacar el promedio. Llama a esta columna avg_temp.
+
+    FROM rave.main
+    Le indica a la base de datos que saque toda la información de la tabla principal del catálogo RAVE.
+
+    WHERE teff_k IS NOT NULL
+    ¡Este es un filtro muy inteligente! Le dice a la base de datos: "Ignora las estrellas que no tengan registrada una temperatura". Si no pones esto, la base de datos podría intentar sumar un dato vacío, lo que da un error matemático o arruina el promedio.
+
+    GROUP BY bin
+    Esta es la instrucción maestra. Le dice a TOPCAT: "No me devuelvas una lista larguísima de estrellas individuales. En su lugar, agrúpalas todas por su número de baldosa (bin) y muéstrame solo el resumen (el conteo y el promedio) de cada una
+
+** Ejercicio 5: Get the averages for the total proper motion from lspm.main in bins of one mag in Jmag each. Let the output table contain the number of objects in each bin, too.
+
+
+SELECT 
+  FLOOR(jmag) AS mag_bin,
+  COUNT(*) AS n_objects,
+  AVG(pm) AS avg_pm
+
+FROM lspm.main
+WHERE jmag IS NOT NULL 
+  AND pm IS NOT NULL
+GROUP BY mag_bin
+ORDER BY mag_bin
+
+
+
+FLOOR(jmag) AS mag_bin: Esta es la clave del ejercicio. La función matemática FLOOR() toma cualquier número decimal y lo redondea hacia abajo al número entero más cercano. Así, si una estrella tiene jmag de 10.2 o 10.9, ambas se convierten en 10. ¡Acabas de crear "bins" de 1 magnitud de anchor!

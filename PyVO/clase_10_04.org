@@ -1,0 +1,10 @@
+#+title: Clase 10 04
+
+Nos conectamos a los servidores y se trabaja desde allá.
+
+* Patrón universal de PyVO:
+
+- Descubrir: Encontrar el servicio. 
+- Conectar: Crear un objeto de conexión usando la URL.
+- Consultar: Enviar parámetros ó consultas ADQL.
+- Procesar: Convertir los resultados en tablas de Astropy.
